@@ -1,0 +1,27 @@
+{
+  "name": "mongo-scraper",
+  "version": "1.0.0",
+  "description": "A Node application that will scrape information from news sites, enable user comments on items and store the information in a mongo database.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Bhearre/Mongo-Scraper.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Bhearre/Mongo-Scraper/issues"
+  },
+  "homepage": "https://github.com/Bhearre/Mongo-Scraper#readme",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "cheerio": "^1.0.0-rc.3",
+    "express": "^4.17.1",
+    "mongoose": "^5.9.2",
+    "morgan": "^1.9.1",
+    "nodemon": "^2.0.2"
+  }
+}
