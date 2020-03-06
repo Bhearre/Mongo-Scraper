@@ -4,7 +4,8 @@
   "description": "A Node application that will scrape information from news sites, enable user comments on items and store the information in a mongo database.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
   "repository": {
     "type": "git",
@@ -23,5 +24,6 @@
     "mongoose": "^5.9.2",
     "morgan": "^1.9.1",
     "nodemon": "^2.0.2"
-  }
+  },
+  "devDependencies": {}
 }
