@@ -1,73 +1,91 @@
 // Grab the articles as a json
-$.getJSON("/articles", function(data) {
-    // For each one
-    for (var i = 0; i < data.length; i++) {
-      // Display the apropos information on the page
-      $("#articles").append("<p data-id='" + data[i]._id + "'>" + data[i].title + "<br />" + data[i].link + "</p>");
+$.get("/api/article", function (data) {
+  // For each one
+  for (const article of data) {
+    const card = `<div class="col-sm-4">
+      <div class="card articleCard">
+        <div class="card-body">
+          <h5 class="card-title"><a href="${article.link}">${article.title}</a></h5>
+          <p class="card-text">${article.summary}</p>
+          <button href="#" data-articleid="${article._id}" class="btn btn-outline-primary commentButton">Add/View Comments</button>
+        </div>
+      </div>
+    </div>`
+    $("#articles").append(card);
+  }
+  $('button.commentButton').click(function (e) {
+    e.preventDefault()
+    const articleId = $(this).attr('data-articleid')
+
+    $.get('/api/article/' + articleId, function (articleData) {
+      refreshCommentsInModal(articleData)
+    })
+  })
+  $('#newCommentButton').click(function (e) {
+    e.preventDefault()
+    const articleId = $('#modalBody').attr('data-articleid')
+    const comment = {
+      body: $('#commentBodyInput').val(),
+      username: $('#usernameInput').val()
     }
-  });
-  
-  
-  // Whenever someone clicks a p tag
-  $(document).on("click", "p", function() {
-    // Empty the notes from the note section
-    $("#notes").empty();
-    // Save the id from the p tag
-    var thisId = $(this).attr("data-id");
-  
-    // Now make an ajax call for the Article
-    $.ajax({
-      method: "GET",
-      url: "/articles/" + thisId
+    if (!comment.body || !comment.username) {
+      alert('Please fill in both fields before submitting new comment')
+      return;
+    }
+    $('#commentBodyInput').val('')
+    $('#usernameInput').val('')
+    console.log('posting comment', comment)
+    $.post(`/api/article/${articleId}/comment`, comment, function (articleData) {
+      console.log('we got the data back woo!', articleData)
+      refreshCommentsInModal(articleData)
     })
-      // With that done, add the note information to the page
-      .then(function(data) {
-        console.log(data);
-        // The title of the article
-        $("#notes").append("<h2>" + data.title + "</h2>");
-        // An input to enter a new title
-        $("#notes").append("<input id='titleinput' name='title' >");
-        // A textarea to add a new note body
-        $("#notes").append("<textarea id='bodyinput' name='body'></textarea>");
-        // A button to submit a new note, with the id of the article saved to it
-        $("#notes").append("<button data-id='" + data._id + "' id='savenote'>Save Note</button>");
-  
-        // If there's a note in the article
-        if (data.note) {
-          // Place the title of the note in the title input
-          $("#titleinput").val(data.note.title);
-          // Place the body of the note in the body textarea
-          $("#bodyinput").val(data.note.body);
+  })
+
+});
+
+function refreshCommentsInModal(article) {
+  let commentsHtml = ''
+  // Save the article id in the modal so we can use it when the add comment button is clicked
+  $('#modalBody').attr('data-articleid', article._id)
+  $('#modalTitle').text(`Comments for "${article.title.substr(0, 30)}..."`)
+  for (const comment of article.comments) {
+    commentsHtml = `${commentsHtml}
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">${comment.username}</a></h5>
+                <p class="card-text">${comment.body}</p>
+                <button href="#" data-articleid="${article._id}" data-commentid="${comment._id}" class="btn btn-outline-danger deleteCommentButton">Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>`
+  }
+  $('#existingComments').empty()
+  if (article.comments.length === 0) commentsHtml = '<p>No one has commented yet...<p>'
+  $('#existingComments').append(commentsHtml)
+  $('#commentsModal').modal('show')
+  setupDeleteClickHandlers()
+}
+
+function setupDeleteClickHandlers() {
+  $('button.deleteCommentButton').click(function (e) {
+    e.preventDefault()
+    console.log('clicked delete')
+    const articleId = $(this).attr('data-articleid')
+    const commentId = $(this).attr('data-commentid')
+    const confirmed = confirm('Are you sure you want to delete this comment?')
+    if (confirmed) {
+      $.ajax({
+        url: `/api/article/${articleId}/comment/${commentId}`,
+        type: 'DELETE',
+        success: function (articleData) {
+          console.log('successfully deleted', commentId)
+          refreshCommentsInModal(articleData)
         }
-      });
-  });
-  
-  // When you click the savenote button
-  $(document).on("click", "#savenote", function() {
-    // Grab the id associated with the article from the submit button
-    var thisId = $(this).attr("data-id");
-  
-    // Run a POST request to change the note, using what's entered in the inputs
-    $.ajax({
-      method: "POST",
-      url: "/articles/" + thisId,
-      data: {
-        // Value taken from title input
-        title: $("#titleinput").val(),
-        // Value taken from note textarea
-        body: $("#bodyinput").val()
-      }
-    })
-      // With that done
-      .then(function(data) {
-        // Log the response
-        console.log(data);
-        // Empty the notes section
-        $("#notes").empty();
-      });
-  
-    // Also, remove the values entered in the input and textarea for note entry
-    $("#titleinput").val("");
-    $("#bodyinput").val("");
-  });
-  
+      })
+    }
+  })
+}
+

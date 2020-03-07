@@ -34,27 +34,6 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser: true });
 // Routes
 app.use('/api', apiRoutes)
 
-// Route for getting all Articles from the db
-app.get("/articles", function (req, res) {
-
-    db.Article.find({})
-        .then(function (dbArticle) {
-            res.json(dbArticle);
-        })
-        .catch(function (err) {
-            res.json(err);
-        })
-});
-
-
-
-// TODO
-// ====
-// save the new note that gets posted to the Notes collection
-// then find an article from the req.params.id
-// and update it's "note" property with the _id of the new note
-
-
 // Start the server
 app.listen(PORT, function () {
     console.log("App running on port " + PORT + "!");
